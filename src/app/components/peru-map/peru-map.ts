@@ -7,7 +7,6 @@ import { isPlatformBrowser } from '@angular/common';
   styleUrls: ['./peru-map.scss'],
 })
 export class PeruMapComponent implements AfterViewInit {
-
   private map: any;
   private L: any;
 
@@ -21,45 +20,74 @@ export class PeruMapComponent implements AfterViewInit {
     }
   }
 
-  private initMap(): void {
+  private async initMap(): Promise<void> {
     const L = this.L;
 
-    // Crear el mapa centrado en Perú 🇵🇪
+    // Crear mapa vacío (sin capa base global)
     this.map = L.map('map', {
       center: [-9.19, -75.0152],
-      zoom: 6,
+      zoom: 5.2,
+      zoomControl: true,
+      minZoom: 4,
+      maxZoom: 8,
     });
 
-    // Capa base
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 10,
-      attribution: '© OpenStreetMap',
+    // Color base único para el mapa
+    const baseStyle = {
+      color: '#ffffff',      // borde
+      weight: 1,
+      fillColor: '#007bff',  // azul uniforme
+      fillOpacity: 0.7,
+    };
+
+    // Efecto hover (resalta el departamento)
+    const highlightStyle = {
+      weight: 2,
+      color: '#000',
+      fillColor: '#0056b3',
+      fillOpacity: 0.9,
+    };
+
+    // Cargar el archivo GeoJSON de Perú
+    //const response = await fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries/PER.geo.json');
+    const response = await fetch('/peru-departamentos.json');
+    //const response = await fetch('');
+    const geojson = await response.json();
+
+    const geoLayer = L.geoJSON(geojson, {
+      style: baseStyle,
+      onEachFeature: (feature: any, layer: any) => {
+        // Tooltip con el nombre del departamento
+        layer.bindTooltip(feature.properties.NOMBDEP || 'Sin nombre', {
+          permanent: false,
+          direction: 'center',
+          className: 'map-tooltip'
+        });
+
+        layer.on({
+          mouseover: (e: any) => {
+            e.target.setStyle(highlightStyle);
+          },
+          mouseout: (e: any) => {
+            geoLayer.resetStyle(e.target);
+          },
+          click: (e: any) => {
+            alert(`🗺️ Departamento: ${feature.properties.NOMBDEP}`);
+          }
+        });
+      }
     }).addTo(this.map);
 
-    // 📍 Marcadores
-    const lima = L.marker([-12.0464, -77.0428])
-      .addTo(this.map)
-      .bindPopup('<b>📍 Lima</b><br>Capital del Perú')
-      .openPopup();
+    // Ajustar el mapa al contorno del Perú
+    this.map.fitBounds(geoLayer.getBounds());
 
-    const ica = L.marker([-14.0678, -75.7286])
+    // 📍 Agregar algunos puntos de referencia
+    L.marker([-12.0464, -77.0428])
+      .addTo(this.map)
+      .bindPopup('<b>📍 Lima</b><br>Capital del Perú');
+
+    L.marker([-14.0678, -75.7286])
       .addTo(this.map)
       .bindPopup('<b>🍇 Ica</b><br>Tierra del vino y el sol');
-
-    const huancayo = L.circleMarker([-12.0667, -75.2047], {
-      radius: 8,
-      color: '#ff1ef4ff',
-      weight: 2,
-      fillColor: '#ff1ef4ff',
-      fillOpacity: 0.9,
-    })
-      .addTo(this.map)
-      .bindPopup('<b>📍 Huancayo</b><br>Ciudad de Huancayo');
-
-    // Evento global de click
-    this.map.on('click', (e: any) => {
-      const { lat, lng } = e.latlng;
-      alert(`Has hecho click en: ${lat.toFixed(2)}, ${lng.toFixed(2)}`);
-    });
   }
 }
