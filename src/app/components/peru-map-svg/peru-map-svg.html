@@ -1,4 +1,11 @@
-<div class="map-container">
+
+<div class="peru-svg-controls">
+  <button type="button" (click)="reduce()" class="ctrl-btn">-</button>
+  <button type="button" (click)="expand()" class="ctrl-btn">+</button>
+</div>
+
+
+<div #mapWrapper class="map-wrapper">
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 542.76703 792"
@@ -116,4 +123,5 @@
 	 
 
   </svg>
+  <ng-content></ng-content>
 </div>

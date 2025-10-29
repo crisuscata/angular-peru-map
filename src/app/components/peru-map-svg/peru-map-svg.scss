@@ -1,12 +1,13 @@
+/*
 .map-container {
   width: 100%;
   height: 100vh;
-  background-color: #6a0dad02; /* Fondo púrpura */
+  background-color: #6a0dad02; 
   display: flex;
   justify-content: center;
   align-items: center;
 }
-
+*/
 .peru-map {
   width: 80%;
   height: auto;
@@ -63,4 +64,50 @@
 
 [data-tooltip]:hover:after {
   opacity: 1;
+}
+
+
+.map-container {
+  width: 100%;
+  height: 100vh;
+  background-color: #6a0dad02;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.map-wrapper {
+  display: inline-block;
+  transition: transform 150ms ease;
+  will-change: transform;
+}
+
+/* control buttons */
+.peru-svg-controls {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 10000;
+  display: flex;
+  gap: 8px;
+}
+
+.ctrl-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: #6a0dad;
+  color: #fff;
+  font-size: 20px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.ctrl-btn:active {
+  transform: translateY(1px);
+}
+
+/* tooltip (optional override) */
+.svg-tooltip {
+  pointer-events: none;
 }
