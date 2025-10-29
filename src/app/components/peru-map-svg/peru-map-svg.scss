@@ -34,3 +34,33 @@
   text-anchor: middle;
   pointer-events: none;
 }
+
+// ...existing code...
+
+/* Custom tooltip styles */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]:after {
+  content: attr(data-tooltip);
+  position: absolute;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Optional: Add animation for smooth appearance */
+[data-tooltip]:after {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+[data-tooltip]:hover:after {
+  opacity: 1;
+}
