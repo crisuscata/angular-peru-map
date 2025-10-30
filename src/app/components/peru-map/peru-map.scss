@@ -5,10 +5,41 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
 }
 
-.map-tooltip {
-  background: rgba(0, 0, 0, 0.7);
+/* 📍 Estilos para el ícono y el cuadro con el número */
+.custom-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.pin-icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px; /* Espacio entre el ícono y el número */
+}
+
+.pin-label {
   color: white;
-  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+  border-radius: 12px;
   padding: 4px 8px;
-  font-size: 13px;
+  background: transparent;
+  display: inline-block;
+  position: relative;
+}
+
+/* 🎨 Colores de fondo del cuadro */
+.red .pin-label {
+  background: #e74c3c;
+}
+
+.green .pin-label {
+  background: #27ae60;
+}
+
+.yellow .pin-label {
+  background: #f1c40f;
+  color: #000;
 }
