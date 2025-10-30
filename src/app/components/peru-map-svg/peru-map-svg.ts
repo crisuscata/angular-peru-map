@@ -1,28 +1,25 @@
 import { Component, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 
-
 @Component({
   selector: 'app-peru-map-svg',
-  imports: [],
   templateUrl: './peru-map-svg.html',
   styleUrls: ['./peru-map-svg.scss']
 })
 export class PeruMapSvg implements AfterViewInit {
-
-
-@ViewChild('mapWrapper', { static: true }) mapWrapper!: ElementRef<HTMLDivElement>;
+  @ViewChild('mapWrapper', { static: true }) mapWrapper!: ElementRef<HTMLDivElement>;
 
   private scale = 1;
   private readonly step = 0.1;
   private readonly minScale = 0.5;
   private readonly maxScale = 2;
 
-  constructor(private el: ElementRef) {}
+  constructor(private el: ElementRef) { }
 
   ngAfterViewInit(): void {
-    // ensure NodeList supports iteration in all envs
-    const paths = Array.from(this.el.nativeElement.querySelectorAll('path')) as SVGPathElement[];
+    const container = (this.mapWrapper && this.mapWrapper.nativeElement) ? this.mapWrapper.nativeElement : this.el.nativeElement;
+    const paths = Array.from(container.querySelectorAll('path')) as SVGPathElement[];
 
+    // HTML tooltip
     const tooltip = document.createElement('div');
     tooltip.className = 'svg-tooltip';
     Object.assign(tooltip.style, {
@@ -39,20 +36,65 @@ export class PeruMapSvg implements AfterViewInit {
     });
     document.body.appendChild(tooltip);
 
+    // Info toolbar (hidden by default)
+    const toolbar = document.createElement('div');
+    toolbar.className = 'dept-toolbar';
+    toolbar.innerHTML = `
+      <div class="dept-toolbar-inner">
+        <button class="dept-toolbar-close" aria-label="Cerrar">✕</button>
+        <h3 class="dept-toolbar-title"></h3>
+        <div class="dept-toolbar-message"></div>
+      </div>
+    `;
+    document.body.appendChild(toolbar);
+
+    const toolbarTitle = toolbar.querySelector('.dept-toolbar-title') as HTMLElement;
+    const toolbarMessage = toolbar.querySelector('.dept-toolbar-message') as HTMLElement;
+    const toolbarClose = toolbar.querySelector('.dept-toolbar-close') as HTMLElement;
+    toolbarClose?.addEventListener('click', () => toolbar.classList.remove('visible'));
+
+    // Attach events to each path
     paths.forEach((path: SVGPathElement) => {
-      const depto = path.getAttribute('title') || '';
+      const depto = path.getAttribute('title') || path.getAttribute('data-name') || 'Sin nombre';
       const bbox = path.getBBox();
+      const originalFill = path.getAttribute('fill') || (window.getComputedStyle(path as any).fill || '#7e57c2'); // morado base
 
-      // native SVG title (fallback)
-      const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-      title.textContent = `Departamento: ${depto}`;
-      path.appendChild(title);
+      // --- Añadir pin en el centro del departamento ---
+      const svgEl = container.querySelector('svg');
+      if (svgEl) {
+        const pin = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        pin.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'icons/pin.png');
+        pin.setAttribute('width', '16');
+        pin.setAttribute('height', '22');
+        pin.setAttribute('x', (bbox.x + bbox.width / 2 - 8).toString());
+        pin.setAttribute('y', (bbox.y + bbox.height / 2 - 22).toString());
+        pin.style.cursor = 'pointer';
+        svgEl.appendChild(pin);
 
-      // show tooltip (HTML) and highlight
+        // Eventos para tooltip y clic
+        pin.addEventListener('mouseover', (e: MouseEvent) => {
+          tooltip.textContent = depto;
+          tooltip.style.display = 'block';
+          tooltip.style.left = `${e.clientX + 10}px`;
+          tooltip.style.top = `${e.clientY + 10}px`;
+        });
+        pin.addEventListener('mousemove', (e: MouseEvent) => {
+          tooltip.style.left = `${e.clientX + 10}px`;
+          tooltip.style.top = `${e.clientY + 10}px`;
+        });
+        pin.addEventListener('mouseout', () => (tooltip.style.display = 'none'));
+        pin.addEventListener('click', (ev: MouseEvent) => {
+          const msg = path.getAttribute('data-message') || `Información sobre ${depto}`;
+          toolbarTitle.textContent = depto;
+          toolbarMessage.textContent = msg;
+          toolbar.classList.add('visible');
+          ev.stopPropagation();
+        });
+      }
+
+      // --- Tooltip y hover del departamento ---
       const onMouseOver = (e: MouseEvent) => {
-        // highlight
         (path as any).style.fill = '#ffffff';
-        // show HTML tooltip with depto
         tooltip.textContent = depto;
         tooltip.style.display = 'block';
         tooltip.style.left = `${e.clientX + 10}px`;
@@ -65,7 +107,7 @@ export class PeruMapSvg implements AfterViewInit {
       };
 
       const onMouseOut = () => {
-        (path as any).style.fill = ''; // reset to stylesheet color
+        (path as any).style.fill = originalFill;
         tooltip.style.display = 'none';
       };
 
@@ -73,19 +115,25 @@ export class PeruMapSvg implements AfterViewInit {
       path.addEventListener('mousemove', onMouseMove);
       path.addEventListener('mouseout', onMouseOut);
 
-      // optional: add centered label text
-      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      text.setAttribute('x', (bbox.x + bbox.width / 2).toString());
-      text.setAttribute('y', (bbox.y + bbox.height / 2).toString());
-      // don't append text by default (uncomment if needed)
-      // path.parentNode?.appendChild(text);
+      // clic abre panel informativo
+      path.addEventListener('click', (ev: MouseEvent) => {
+        const customMsg = path.getAttribute('data-message') || `Información sobre ${depto}`;
+        toolbarTitle.textContent = depto;
+        toolbarMessage.textContent = customMsg;
+        toolbar.classList.add('visible');
+        ev.stopPropagation();
+      });
     });
 
-    // apply initial scale to wrapper
+    // ocultar toolbar al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      if (!toolbar.contains(e.target as Node)) toolbar.classList.remove('visible');
+    });
+
     this.applyScale();
   }
 
-reduce(): void {
+  reduce(): void {
     this.scale = Math.max(this.minScale, +(this.scale - this.step).toFixed(2));
     this.applyScale();
   }
@@ -102,5 +150,4 @@ reduce(): void {
       el.style.transformOrigin = 'top left';
     }
   }
-
 }

@@ -1,13 +1,3 @@
-/*
-.map-container {
-  width: 100%;
-  height: 100vh;
-  background-color: #6a0dad02; 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-*/
 .peru-map {
   width: 80%;
   height: auto;
@@ -15,74 +5,39 @@
 
 /* Estilo base de cada departamento */
 .peru-map path {
-  fill: rgb(151, 144, 238); /* azul inicial */
+  fill: rgb(151, 144, 238);
   stroke: #fff;
   stroke-width: 1;
   cursor: pointer;
   transition: fill 0.2s ease;
 }
 
-/* Hover: cambia a blanco sin agrandarse */
+/* Hover: cambia a blanco */
 .peru-map path:hover {
   fill: #ffffff;
 }
 
-/* Texto de los nombres de los departamentos */
 .peru-map text {
   font-family: 'Arial', sans-serif;
   font-size: 10px;
-  fill: #fff; /* blanco por defecto */
+  fill: #fff;
   text-anchor: middle;
   pointer-events: none;
 }
 
-// ...existing code...
-
-/* Custom tooltip styles */
-[data-tooltip] {
-  position: relative;
-}
-
-[data-tooltip]:after {
-  content: attr(data-tooltip);
-  position: absolute;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  white-space: nowrap;
-  z-index: 10;
+/* tooltip (HTML) */
+.svg-tooltip {
   pointer-events: none;
+  white-space: nowrap;
 }
 
-/* Optional: Add animation for smooth appearance */
-[data-tooltip]:after {
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-[data-tooltip]:hover:after {
-  opacity: 1;
-}
-
-
-.map-container {
-  width: 100%;
-  height: 100vh;
-  background-color: #6a0dad02;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
+/* controls and wrapper */
 .map-wrapper {
   display: inline-block;
   transition: transform 150ms ease;
   will-change: transform;
 }
 
-/* control buttons */
 .peru-svg-controls {
   position: fixed;
   top: 16px;
@@ -102,12 +57,34 @@
   border-radius: 6px;
   cursor: pointer;
 }
+.ctrl-btn:active { transform: translateY(1px); }
 
-.ctrl-btn:active {
-  transform: translateY(1px);
-}
-
-/* tooltip (optional override) */
-.svg-tooltip {
+/* toolbar */
+.dept-toolbar {
+  position: fixed;
+  right: 16px;
+  top: 80px;
+  width: 300px;
+  background: #fff;
+  color: #111;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  transform: translateY(-10px);
+  opacity: 0;
   pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+  z-index: 11000;
+  font-family: Arial, sans-serif;
 }
+.dept-toolbar.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.dept-toolbar-inner { padding: 12px 14px; position: relative; }
+.dept-toolbar-close {
+  position: absolute; right: 8px; top: 8px;
+  border: none; background: transparent; cursor: pointer; font-size: 14px;
+}
+.dept-toolbar-title { margin: 2px 0 8px; font-size: 16px; font-weight: 600; }
+.dept-toolbar-message { font-size: 13px; color: #333; line-height: 1.3; }
